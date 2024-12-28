@@ -15,6 +15,7 @@
   libiconv,
   pcre2,
   pkg-config,
+  sphinx,
   gettext,
   ncurses,
   python3,
@@ -216,8 +217,6 @@ let
         # tests/checks/complete.fish
         sed -i 's|/bin/ls|${lib.getExe' coreutils "ls"}|' tests/checks/complete.fish
 
-        sed -i 's|/bin/ls|${coreutils}/bin/ls|' tests/checks/complete.fish
-
         # pexpect tests are flaky
         # See https://github.com/fish-shell/fish-shell/issues/8789
         rm tests/pexpects/exit_handlers.py
@@ -241,7 +240,9 @@ let
       "out"
       "doc"
     ];
+
     strictDeps = true;
+
     nativeBuildInputs = [
       cargo
       cmake
@@ -264,6 +265,11 @@ let
       ++ lib.optionals stdenv.hostPlatform.isDarwin [
         "-DMAC_CODESIGN_ID=OFF"
       ];
+
+    preBuild = ''
+      # Avoid warnings when building the manpages about HOME not being writable
+      export HOME=$(mktemp -d)
+    '';
 
     # Fish’s test suite needs to be able to look up process information and send signals.
     sandboxProfile = lib.optionalString stdenv.hostPlatform.isDarwin ''
@@ -300,6 +306,7 @@ let
         glibcLocales
         (python3.withPackages (ps: [ ps.pexpect ]))
         procps
+        sphinx
       ]
       ++ lib.optionals stdenv.hostPlatform.isDarwin [
         # For the getconf command, used in default-setup-path.fish
