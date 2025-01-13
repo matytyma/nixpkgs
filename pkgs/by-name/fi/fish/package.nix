@@ -155,8 +155,10 @@ let
     src = fetchFromGitHub {
       owner = "fish-shell";
       repo = "fish-shell";
-      tag = finalAttrs.version;
-      hash = "sha256-O5xZHXNrJMpjTA2mrTqzMtU/55UArwoc2adc0R6pVl0=";
+      # TODO: uncomment and remove rev once the stable version is released
+      #tag = finalAttrs.version;
+      rev = "b6c249be0c4f075a9e7d65f94fd1677da2c58e72";
+      hash = "sha256-3Ce5o0oXR1uPAcwFjieEigbr4oYwV5f7ZsR4NA7blk4=";
     };
 
     env = {
@@ -167,7 +169,7 @@ let
 
     cargoDeps = rustPlatform.fetchCargoVendor {
       inherit (finalAttrs) src;
-      hash = "sha256-jTVZKzX/Uy2RtyMbeQmatLLrOO+5S5jXrYKMGXNMcV4=";
+      hash = "sha256-7M263Jg7Z2EytpsUUVgeh8qs49clkHHU2PV8W+ytSko=";
     };
 
     patches = [
@@ -194,7 +196,7 @@ let
         substituteInPlace src/builtins/tests/test_tests.rs \
           --replace-fail '"/bin/ls"' '"${lib.getExe' coreutils "ls"}"'
 
-        substituteInPlace src/tests/highlight.rs \
+        substituteInPlace src/highlight/tests.rs \
           --replace-fail '"/bin/echo"' '"${lib.getExe' coreutils "echo"}"' \
           --replace-fail '"/bin/c"' '"${lib.getExe' coreutils "c"}"' \
           --replace-fail '"/bin/ca"' '"${lib.getExe' coreutils "ca"}"' \
@@ -292,6 +294,7 @@ let
     preConfigure =
       ''
         patchShebangs ./build_tools/git_version_gen.sh
+        patchShebangs ./tests/test_driver.py
       ''
       + lib.optionalString (stdenv.hostPlatform != stdenv.buildPlatform) ''
         export CMAKE_PREFIX_PATH=
